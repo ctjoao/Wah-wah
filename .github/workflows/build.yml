@@ -12,11 +12,12 @@ jobs:
         include:
           - os: windows-latest
             name: Windows
-          - os: macos-latest
+          - os: macos-14
             name: macOS
           - os: ubuntu-22.04
             name: Linux
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     name: ${{ matrix.name }}
     steps:
       - uses: actions/checkout@v4
