@@ -46,3 +46,33 @@ jobs:
         with:
           name: SoloWah-VST3-${{ matrix.name }}
           path: dist
+
+  release:
+    name: Publish download page
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Zip each platform
+        run: |
+          mkdir -p out
+          for d in artifacts/*/; do
+            n=$(basename "$d")
+            (cd "$d" && zip -qr "../../out/$n.zip" .)
+          done
+          ls -la out
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag --repo "${{ github.repository }}" || true
+          gh release create latest out/*.zip --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Solo Wah VST3 (latest build)" \
+            --notes "Download the zip for your system, unzip it, and copy Solo Wah.vst3 into your VST3 folder. macOS users: SoloWah-VST3-macOS.zip."
